@@ -1,0 +1,22 @@
+{
+  "contract_name": "PriceUpdater",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "offset",
+          "type": "uint256"
+        }
+      ],
+      "name": "schedule",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    }
+  ],
+  "unlinked_binary": "0x",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1500391953395
+}
