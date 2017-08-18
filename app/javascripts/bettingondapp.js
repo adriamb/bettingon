@@ -202,10 +202,7 @@ export default class BettingonDApp {
 
       if (status == OPEN){
 
-        this._candleBar.drawTimeGrid(
-          pricePublishDate,
-          CandlebarGraph.TARGETCOLOR
-        )
+        this._candleBar.setBetTime(pricePublishDate)
 
         $('#currentRoundInfo').html(info)
         $("#currentRoundBetActions").html(actions);
@@ -225,7 +222,7 @@ export default class BettingonDApp {
               [bet[1].toNumber()/1000,"member:"+bet[0]],
               this._directoryCached
           )
-          this._candleBar.drawBet(pricePublishDate,bet[1].toNumber()/1000)
+          this._candleBar.addBet(pricePublishDate,bet[1].toNumber()/1000)
         } 
 
       } else {
