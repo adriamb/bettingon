@@ -1,68 +1,35 @@
-body {
-  margin-left: 15%;
-  margin-right: 15%;
-  font-family: "Open Sans", sans-serif;
+@import "normalize.css";
+@import "skeleton.css";
+@import "skeleton-tabs.css";
+@import "toastr.css";
+
+.info {
+  font-size: 12;
 }
 
-label {
-  display: inline-block;
+.blockymember {
   width: 100px;
+  text-align: center;
 }
 
-input {
-  width: 500px;
-  padding: 5px;
-  font-size: 16px;
+.blocky {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 0 auto;
+  cursor: pointer; cursor: hand;
 }
 
-button {
-  border-radius: 12px;
-  border-size: 1px;
-  background: #D0A9F5;
-  padding: 3px; 
-  color: #FFF;
-  border-color: #D0A9F5;
-  font-size: 12px;
+.topcorner{
+   position:absolute;
+   top:10px;
+   right:10px;
 }
 
-button:hover {
-  background-color: #4C0B5F;
-  border-color: #4C0B5F;
+.status{
+  height: 32px;
+  display:block;
 }
 
-h1, h2 {
-  display: inline-block;
-  vertical-align: middle;
-  margin-top: 0px;
-  margin-bottom: 10px;
+.h2 {
+  -webkit-margin-after : 0px;
 }
-
-h2 {
-  color: #AAA;
-  font-size: 32px;
-}
-
-h3 {
-  font-weight: normal;
-  color: #AAA;
-  font-size: 24px;
-}
-
-a {
-  color: black;
-}
-
-
-
-.black {
-  color: black;
-}
-
-#balance {
-  color: black;
-}
-
-.hint {
-  color: #666;
-}
-

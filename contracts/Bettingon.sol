@@ -112,7 +112,9 @@ contract Bettingon {
         address account,
         uint32  target
     );
-    
+
+    function getRoundPendingAmout(uint32 _roundId, address _addr) external constant returns (uint);
+
     function getNow() external constant returns (uint64);
 
 }

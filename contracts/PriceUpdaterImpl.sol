@@ -50,8 +50,7 @@ contract PriceUpdaterImpl is PriceUpdater, usingOraclize {
         require(msg.sender == address(bettingon));
 
         if (oraclize.getPrice("URL") > this.balance) {
-            LogError("Insuficient amount");
-            return;
+            throw;
         }        
         
         bytes32 myid = oraclize_query(_timeOffset, "URL", url);

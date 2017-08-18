@@ -444,6 +444,14 @@ contract BettingonImpl is Bettingon {
         return uint64(now);
     }
 
+    function getRoundPendingAmout(uint32 _roundId, address _addr) external constant returns (uint) {
+        
+        uint32 roundNo = roundById[_roundId];
+
+
+    }
+
+
     /// generic helpers ------------------------------------------------
 
     function isContract(address addr) internal returns (bool) {
@@ -463,5 +471,7 @@ contract BettingonImpl is Bettingon {
            return _b.sub(_a);
        }
     }
+
+
 
 }

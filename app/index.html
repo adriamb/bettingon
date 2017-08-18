@@ -3,13 +3,72 @@
 <head>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <script src="./app.js"></script>
-</head>
+</head
+>
 <body>
-  <h1>Bettingon</h1>
-  <canvas id="canvas" width="800" height="200"></canvas>
-  <span id="status"></span><br>
-  <div id="paramInfo"></div>
-  <div id="info"></div>
-  <br>
+
+  <div class="topcorner" id="currentMember"></div>
+
+  <div class="container">
+    <div class="row">
+      <div class="four column">
+
+        <img src="img/logo.png">
+        <h2 id="taskCrowdName">BETTINGON</h2>
+
+		<span id="status"></span>
+		
+		<canvas id="canvas" width="800" height="200"></canvas>
+        
+        <ul class="tab-nav">
+          <li>
+            <a class="button active" href="#currentRoundTab">Current round</a>
+          </li>
+          <li>
+            <a class="button" href="#pastRoundsTab">Past rounds</a>
+          </li>
+          <li>
+            <a class="button" href="#infoTab">Info</a>
+          </li>
+          <li>
+            <a class="button" href="#debugTab">Debug</a>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+
+		  	<div id="info"></div>
+
+          <div class="tab-pane active" id="currentRoundTab">
+
+			<div id="currentRoundInfo"></div>
+            <table id="currentRoundTable">
+              <thead><tr><th>Address</th><th>Bet</th></thead>
+            </table>             
+			<div id="currentRoundBetActions"></div>
+
+          </div>
+
+          <div class="tab-pane" id="pastRoundsTab">
+            <table id="pastRoundsTable">
+              <thead><tr><th>Round</th><th>Bets</th><th>Status</th><th>Info</th><th>Action</th></thead>
+            </table>             
+          </div>
+
+          <div class="tab-pane" id="infoTab">
+			  <div id="paramInfo"></div>
+          </div>
+          
+          <div class="tab-pane" id="debugTab">
+            <div id="statusline" class="info"></div>
+            <div id="logs" class="logs" style="height: 400px; overflow-y: scroll;""></div>
+          </div>
+        
+        </div>
+     </div>
+  </div>
+  </div>
+  <input type="text" style="display:none; position: relative; left: -10000px;" id="copyTarget" value="">
 </body>
 </html>
+

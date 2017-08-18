@@ -2,16 +2,18 @@ pragma solidity ^0.4.11;
 
 import "../BettingonImpl.sol";
 import "../PriceUpdaterImpl.sol";
+import "../DirectoryImpl.sol";
 
 contract BettingonUITest is BettingonImpl {
     
    function BettingonUITest(
         address owner,
-        address priceUpdaterAddress
+        address priceUpdaterAddress,
+        address directory
     ) BettingonImpl(
         owner,
         priceUpdaterAddress,
-        /* directory           */ 0, 
+        directory, 
         /* betCycleLength      */ 60*4,
         /* betCycleOffset      */ 0,
         /* betMinReveaLength   */ 60,
@@ -35,12 +37,14 @@ contract BettingonUITestDeploy {
     
     PriceUpdaterImpl public pu;
     BettingonUITest  public bon;
+    DirectoryImpl    public d;
     
     function BettingonUITestDeploy(
         address oar
     ) {
         pu = new PriceUpdaterImpl(this);
-        bon = new BettingonUITest(this,address(pu));
+        d = new DirectoryImpl();
+        bon = new BettingonUITest(this,address(pu),d);
         pu.initialize(
             oar,
             address(bon),
