@@ -179,7 +179,6 @@ export default class CandlebarGraph {
 
   }
 
-
   drawBet(t, v) {
 
     const x = (t - this._startTime) / this._scaleTime

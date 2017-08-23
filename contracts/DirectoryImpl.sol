@@ -12,8 +12,8 @@ contract DirectoryImpl is Directory {
 	}
 
 	function setName(string _name) {
-//		require(bytes(_name).length > 4);
-//		require(reverse[sha3(_name)]==false);
+		require(bytes(_name).length > 4);
+		require(reverse[sha3(_name)]==false);
 
 		string oldName = names[msg.sender];
 		if (bytes(oldName).length > 0) {

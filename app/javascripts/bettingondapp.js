@@ -4,13 +4,13 @@ import { default as contract } from 'truffle-contract'
 import { default as Helper } from './helper.js';
 import { default as CandlebarGraph } from './candlebargraph.js';
 import { default as DirectoryCached } from './directorycached.js';
+import { default as toastr } from 'toastr';
+import { default as $ } from 'jquery';
 
 // Import our contract artifacts and turn them into usable abstractions.
 import bettingonArtifact from '../../build/contracts/Bettingon.json'
 import bettingonuitestdeployArtifact from '../../build/contracts/BettingonUITestDeploy.json'
 import directoryArtifact from '../../build/contracts/Directory.json'
-
-import { default as $ } from 'jquery';
 
 const FUTURE     = 0  // Not exists yet
 const OPEN       = 1  // Open to bets
@@ -243,7 +243,6 @@ export default class BettingonDApp {
   }
 
   doTransaction(promise) {
-
     var self = this;
     this.setStatus("Waiting network agrees with operation",true);
 
@@ -252,9 +251,10 @@ export default class BettingonDApp {
       self.setStatus("Waiting network agrees with operation "+Helper.formatTrn(tx.tx)+"...",true);
       console.log("tx "+tx.tx);
       return Helper.getTransactionReceiptMined(tx.tx);     
-    }).then ( ( resolve, reject ) => {
+    }).then ( receipt  => {
       self.setStatus("Success",false);
       self.refresh()
+      return new Promise((resolve, reject)=>{resolve(receipt)})
     }).catch ( (e) => {
       console.log(e);
       self.setStatus("Failed",false);
@@ -277,8 +277,25 @@ export default class BettingonDApp {
         roundId,targets,
         {from: self._account, value: self._betAmount.mul(targets.length), gas: 700000 }
       )
-    );
+    ).then (receipt => {
+      let topics = []
+      for (let rn = 0; rn < receipt.logs.length; rn++) {
+        for (let tn = 0; tn < receipt.logs[rn].topics.length; tn++) {
+          topics.push(receipt.logs[rn].topics[tn])
+        }
+      }
+      const TOPICBET         = web3.sha3("LogBet(uint32,address,uint32[])")
+      const TOPICBETOUTDATED = web3.sha3("LogBetOutdated(uint32,address,uint32[])")
 
+      if (topics.indexOf(TOPICBET) != -1) {
+          toastr.info('Bet added');
+      } else if (topics.indexOf(TOPICBETOUTDATED) != -1) {        
+          toastr.error('Bet outdated');
+      } else {
+          toastr.error('Something wrong happened');
+
+      }
+    })
   }
 
   uiResolve(roundId) {

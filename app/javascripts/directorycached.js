@@ -1,6 +1,7 @@
 import { default as $ } from 'jquery';
 import { default as blockies } from 'blockies';
 import { default as toastr } from 'toastr';
+import { default as sanitizeHtml } from 'sanitize-html'
 
 export default class DirectoryCached {
 
@@ -64,7 +65,7 @@ export default class DirectoryCached {
     e.attr("class","blockymember");
     e.append(this.memberIcon(address,4).attr("class","blocky"))
     if (clickUrl !== undefined) {
-      e.append($("<div>").html("<a href='"+clickUrl+"'>"+name+"</a>"))
+      e.append($("<div>").html("<a href='"+clickUrl+"'>["+sanitizeHtml(name)+"]</a>"))
     } else {
       e.append($("<div>").html(name))
     }
