@@ -20,7 +20,7 @@ contract BettingonUITest is BettingonImpl {
         /* betMaxReveaLength   */ 60*3,
         /* betAmount           */ 10**16,  // 0.01 eths
         /* platformFee         */ 1, 
-        /* platformFeeAddress  */ 0,
+        /* platformFeeAddress  */ owner,
         /* boatFee             */ 3
     ) {
         platformFeeAddress = msg.sender;

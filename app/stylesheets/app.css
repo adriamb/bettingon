@@ -26,8 +26,9 @@
 }
 
 .status{
-  height: 32px;
-  display:block;
+   position:absolute;
+   top:10px;
+   right:100px;
 }
 
 .h2 {

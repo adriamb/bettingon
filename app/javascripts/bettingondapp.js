@@ -21,6 +21,16 @@ const PRICELOST  = 5  // Oracle cannot set the price [end]
 const RESOLVED   = 6  // Bet calculated 
 const FINISHED   = 7  // Prize paid [end]
 
+const TOPICBET         = web3.sha3("LogBet(uint32,address,uint32[])")
+const TOPICBETOUTDATED = web3.sha3("LogBetOutdated(uint32,address,uint32[])")
+const TOPICWINNER      = web3.sha3("LogWinner(uint32,address)")
+const TOPICWINNERPAID  = web3.sha3("LogWinnerPaid(uint32,address,uint256,uint256)")
+const TOPICREFUND      = web3.sha3("LogRefund(uint32,address,uint256)")
+const TOPICPRICESET    = web3.sha3("LogPriceSet(uint32,uint32)")
+const TOPICUNRESOLVED  = web3.sha3("LogUnresolved(uint32,uint32)")
+
+"0xf0e5bd83d322235f78c8ffef745d7907db18e55a163d3716d188050d68825405"
+
 export default class BettingonDApp {
 
   constructor() {
@@ -33,13 +43,17 @@ export default class BettingonDApp {
       this._Bettingon = contract(bettingonArtifact);
       this._Directory = contract(directoryArtifact);
       this._BettingonUITestDeploy = contract(bettingonuitestdeployArtifact);
+
   }
+
+
+
 
   async start() {
 
     var self = this;
 
-    this.setStatus("Loading...",true);
+    this.setStatus("Loading",true);
 
     // Bootstrap the MetaCoin abstraction for Use.
     this._Bettingon.setProvider(web3.currentProvider);
@@ -64,9 +78,24 @@ export default class BettingonDApp {
 
       await self.loadBettingtonParameters()
       await self.refresh()
-
+      await self.watchAccountChange();
     })
 
+  }
+
+  async watchAccountChange() {
+      var self = this;
+
+      setTimeout(function(){
+        web3.eth.getAccounts(async function(err, accs) {
+          if (self._account != accs[0] ) {
+            self._accounts = accs;
+            self._account = accs[0];
+            await self.refresh()
+          }
+          await self.watchAccountChange()
+        })              
+      }, 2000);    
   }
 
   async loadBettingtonParameters()  {
@@ -103,7 +132,7 @@ export default class BettingonDApp {
     })
 
     $('#paramInfo').html(displayInfo)
-    this.setStatus("Loaded",false);
+    this.setStatus("",false);
 
   }
 
@@ -156,10 +185,9 @@ export default class BettingonDApp {
       let info = ""
       let actions = ""
 
-      const bidButton = "<button id='bid' onclick='app.uiBid("+roundId+")'>Bid</button>"
-      const withdrawButton = "<button onclick='app.uiWithdraw("+roundId+")'>Withdraw</button>"
-      const resolveButton = "<button onclick='app.uiResolve("+roundId+")'>Resolve</button>"
-      const showBetsButton = "<button onclick='app.uiShowBets("+roundId+")'>Show bets</button>"
+      const bidButton = "<button class='button-primary' onclick='app.uiBid("+roundId+")'>Bid</button>"
+      const withdrawButton = "<button class='button-primary' onclick='app.uiWithdraw("+roundId+")'>Withdraw</button>"
+      const showBetsButton = "<button onclick='app.uiShowMyBets("+roundId+")'>My bets</button>"
 
       const pricePublishDate = closeDate+this._betMinRevealLength
 
@@ -182,7 +210,6 @@ export default class BettingonDApp {
         case PRICESET :
            info += "Price is "+target+" USD/ETH ["+lastCheckedBetNo+"/"+betCount+" resolved]"
            actions += showBetsButton
-           actions += resolveButton
            actions += withdrawButton
            break;
         case PRICELOST :
@@ -215,14 +242,19 @@ export default class BettingonDApp {
             )
         }
 
-        for (let betNo = 0; betNo < betCount; betNo++) { 
-          const bet = await this._bon.getBetAt(roundNo,betNo);
+        for (let betNo = 0; betNo < betCount ; ) { 
+          let row = []
+          for (let col = 0; col < 5 && betNo < betCount; col++, betNo++) {
+             const bet = await this._bon.getBetAt(roundNo,betNo);
+             this._candleBar.addBet(pricePublishDate,bet[1].toNumber()/1000)
+             row.push(bet[1].toNumber()/1000)
+             row.push("member:"+bet[0])
+          }
           Helper.addTableRow(
               $("#currentRoundTable"),
-              [bet[1].toNumber()/1000,"member:"+bet[0]],
+              row,
               this._directoryCached
           )
-          this._candleBar.addBet(pricePublishDate,bet[1].toNumber()/1000)
         } 
 
       } else {
@@ -238,26 +270,33 @@ export default class BettingonDApp {
   }
 
   setStatus(message,working) {
-    if (working) message+="<img height=40 width=40 src='https://s-media-cache-ak0.pinimg.com/originals/d9/93/3c/d9933c4e2c272f33b74ef18cdf11a7d5.gif'>"
+    if (working) message+="<img height=40 width=40 src='https://media.giphy.com/media/DoGDAF93K9QpG/giphy.gif'>"
     $('#status').html(message);
   }
 
   doTransaction(promise) {
     var self = this;
-    this.setStatus("Waiting network agrees with operation",true);
 
     return promise
     .then ( (tx) => {
-      self.setStatus("Waiting network agrees with operation "+Helper.formatTrn(tx.tx)+"...",true);
+      self.setStatus("Sending",true);
       console.log("tx "+tx.tx);
       return Helper.getTransactionReceiptMined(tx.tx);     
     }).then ( receipt  => {
-      self.setStatus("Success",false);
+      self.setStatus("",false);
       self.refresh()
-      return new Promise((resolve, reject)=>{resolve(receipt)})
+      let topics = {}
+      for (let rn = 0; rn < receipt.logs.length; rn++) {
+        for (let tn = 0; tn < receipt.logs[rn].topics.length; tn++) {
+          topics[receipt.logs[rn].topics[tn]]=0
+        }
+      }
+      console.log(receipt)
+      return new Promise((resolve, reject)=>{resolve(topics)})
     }).catch ( (e) => {
       console.log(e);
-      self.setStatus("Failed",false);
+      toastr.error('Failed to send transaction');
+      self.setStatus("",false);
     })
 
   }
@@ -275,43 +314,47 @@ export default class BettingonDApp {
     this.doTransaction(
       self._bon.bet(
         roundId,targets,
-        {from: self._account, value: self._betAmount.mul(targets.length), gas: 700000 }
+        {from: self._account, value: self._betAmount.mul(targets.length) }
       )
-    ).then (receipt => {
-      let topics = []
-      for (let rn = 0; rn < receipt.logs.length; rn++) {
-        for (let tn = 0; tn < receipt.logs[rn].topics.length; tn++) {
-          topics.push(receipt.logs[rn].topics[tn])
-        }
-      }
-      const TOPICBET         = web3.sha3("LogBet(uint32,address,uint32[])")
-      const TOPICBETOUTDATED = web3.sha3("LogBetOutdated(uint32,address,uint32[])")
-
-      if (topics.indexOf(TOPICBET) != -1) {
+    ).then (topics => {
+      if (TOPICBET in topics) {
           toastr.info('Bet added');
-      } else if (topics.indexOf(TOPICBETOUTDATED) != -1) {        
-          toastr.error('Bet outdated');
+      } else if (TOPICBETOUTDATED in topics) {        
+          toastr.error('Bet outdated, another round is active');
       } else {
           toastr.error('Something wrong happened');
-
       }
     })
   }
 
-  uiResolve(roundId) {
+  async uiShowMyBets(roundId) {
 
-    var self = this;
+    this.setStatus("Reading",true);
 
-    self.doTransaction(
-      self._bon.resolve(roundId,999,{from: self._account, gas: 700000})
-    );
+    const now = Math.floor(Date.now() / 1000);
+    const _values = await this._bon.getRoundById(roundId, web3.toBigNumber(now))
 
-  }
+    let [ _, roundNo, status, closeDate,
+      betCount, target, lastCheckedBetNo,
+      closestBetNo
+    ] = [ 
+      _values[0].toNumber(), _values[1].toNumber(), _values[2].toNumber(),
+      _values[3].toNumber(), _values[4].toNumber(), _values[5].toNumber(),
+      _values[6].toNumber()
+    ];
 
-  uiShowBets(roundId) {
+    let bets = ""
+    for (let betNo = 0; betNo < betCount; betNo++) { 
+      const bet = await this._bon.getBetAt(roundNo,betNo);
+      if (bet[0] == this._account) {
+        if (bets!="") bets=bets+","
+        bets += (bet[1].toNumber()/1000)
+      }
+    } 
+    if (bets=="") toastr.info('No bets found');
+    else toastr.info("You bet on: "+bets)
 
-    var self = this;
-
+    this.setStatus("",false);
   }
 
   uiChangeName() {
@@ -333,11 +376,17 @@ export default class BettingonDApp {
   uiWithdraw(roundId) {
 
     var self = this;
-
     self.doTransaction(
-      self._bon.withdraw(roundId,{from: self._account, gas: 700000})
-    );
-
+      self._bon.withdraw(roundId,{from: self._account })
+    ).then (topics => {
+      if (TOPICREFUND in topics) {
+          toastr.info('Money refunded');
+      } else if (TOPICWINNERPAID in topics) {        
+          toastr.error('Paid to winner!');
+      } else if (TOPICUNRESOLVED in topics) {        
+          toastr.error('You need more withdraws');
+      }
+    })
   }
 
 }
