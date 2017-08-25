@@ -14,16 +14,15 @@ contract BettingonUITest is BettingonImpl {
         owner,
         priceUpdaterAddress,
         directory, 
-        /* betCycleLength      */ 60*4,
+        /* betCycleLength      */ 60*1,
         /* betCycleOffset      */ 0,
         /* betMinReveaLength   */ 60,
         /* betMaxReveaLength   */ 60*3,
         /* betAmount           */ 10**16,  // 0.01 eths
-        /* platformFee         */ 1, 
-        /* platformFeeAddress  */ owner,
-        /* boatFee             */ 3
+        /* platformFee         */ 10, 
+        /* platformFeeAddress  */ tx.origin,
+        /* boatFee             */ 20
     ) {
-        platformFeeAddress = msg.sender;
     }
 
     function terminate() {

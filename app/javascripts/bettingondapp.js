@@ -21,15 +21,13 @@ const PRICELOST  = 5  // Oracle cannot set the price [end]
 const RESOLVED   = 6  // Bet calculated 
 const FINISHED   = 7  // Prize paid [end]
 
-const TOPICBET         = web3.sha3("LogBet(uint32,address,uint32[])")
-const TOPICBETOUTDATED = web3.sha3("LogBetOutdated(uint32,address,uint32[])")
-const TOPICWINNER      = web3.sha3("LogWinner(uint32,address)")
-const TOPICWINNERPAID  = web3.sha3("LogWinnerPaid(uint32,address,uint256,uint256)")
-const TOPICREFUND      = web3.sha3("LogRefund(uint32,address,uint256)")
-const TOPICPRICESET    = web3.sha3("LogPriceSet(uint32,uint32)")
-const TOPICUNRESOLVED  = web3.sha3("LogUnresolved(uint32,uint32)")
-
-"0xf0e5bd83d322235f78c8ffef745d7907db18e55a163d3716d188050d68825405"
+let TOPICBET         
+let TOPICBETOUTDATED 
+let TOPICWINNER      
+let TOPICWINNERPAID  
+let TOPICREFUND      
+let TOPICPRICESET    
+let TOPICUNRESOLVED  
 
 export default class BettingonDApp {
 
@@ -44,10 +42,14 @@ export default class BettingonDApp {
       this._Directory = contract(directoryArtifact);
       this._BettingonUITestDeploy = contract(bettingonuitestdeployArtifact);
 
+      TOPICBET         = web3.sha3("LogBet(uint32,address,uint32[])")
+      TOPICBETOUTDATED = web3.sha3("LogBetOutdated(uint32,address,uint32[])")
+      TOPICWINNER      = web3.sha3("LogWinner(uint32,address)")
+      TOPICWINNERPAID  = web3.sha3("LogWinnerPaid(uint32,address,uint256,uint256)")
+      TOPICREFUND      = web3.sha3("LogRefund(uint32,address,uint256)")
+      TOPICPRICESET    = web3.sha3("LogPriceSet(uint32,uint32)")
+      TOPICUNRESOLVED  = web3.sha3("LogUnresolved(uint32,uint32)")
   }
-
-
-
 
   async start() {
 
@@ -208,7 +210,7 @@ export default class BettingonDApp {
            info += "<br>bets are for price published in "+new Date(1000*pricePublishDate);
            break;
         case PRICESET :
-           info += "Price is "+target+" USD/ETH ["+lastCheckedBetNo+"/"+betCount+" resolved]"
+           info += "Price is "+target/1000+" USD/ETH ["+lastCheckedBetNo+"/"+betCount+" resolved]"
            actions += showBetsButton
            actions += withdrawButton
            break;
@@ -217,13 +219,13 @@ export default class BettingonDApp {
            actions += withdrawButton
            break;
         case RESOLVED :
-           info += "Price is "+target+" USD/ETH"
+           info += "Price is "+target/1000+" USD/ETH"
            actions += showBetsButton
            actions += withdrawButton
            break;
         case FINISHED :
            actions += showBetsButton
-           info += "Price is "+target+" USD/ETH "
+           info += "Price is "+target/1000+" USD/ETH "
            break;
       }
 
@@ -382,9 +384,9 @@ export default class BettingonDApp {
       if (TOPICREFUND in topics) {
           toastr.info('Money refunded');
       } else if (TOPICWINNERPAID in topics) {        
-          toastr.error('Paid to winner!');
+          toastr.info('Paid to winner!');
       } else if (TOPICUNRESOLVED in topics) {        
-          toastr.error('You need more withdraws');
+          toastr.warning('You need more withdraws');
       }
     })
   }

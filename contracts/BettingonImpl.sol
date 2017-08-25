@@ -453,7 +453,7 @@ contract BettingonImpl is Bettingon {
     }
 
     function percentage(uint _amount, uint8 _perc) internal constant returns (uint) {
-        return _amount.mul(10**16).mul(_perc).div(10**18);
+        return _amount.mul(_perc).div(100);
     }
 
     function diff(uint _a, uint _b) internal constant returns (uint) {
