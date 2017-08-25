@@ -34,4 +34,5 @@ window.addEventListener('load', function() {
   window.app = new BettingonDApp()
   window.app.start()
 
+
 });

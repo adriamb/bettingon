@@ -14,6 +14,7 @@ contract Bettingon {
     event LogBetOutdated(uint32 roundId, address account, uint32[] targets);
     event LogRefund(uint32 roundId, address account, uint amount);
     event LogPriceSet(uint32 roundId, uint32 target);
+    event LogUnresolved(uint32 roundId, uint32 pending);
 
     /// types ---------------------------------------------------
 

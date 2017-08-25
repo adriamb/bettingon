@@ -336,20 +336,22 @@ contract("Basic unit tests", (accounts) => {
     
     });
 
-    it("fail to refund before resolving", async () => {
+    it("fail to refund before full resolving", async () => {
         
         const betValue = await bon.betAmount()
         const [roundId,,,,,,] = await bon.getRoundById(0,VMTIME)
+        const maxResolves = (await bon.MAXRESOLVES()).toNumber()
 
         await bon.bet(roundId, [260000],  {from : user1 , value : betValue})
-        await bon.bet(roundId, [270000],  {from : user2 , value : betValue})
+
         let trn = await bon.withdraw(roundId, {from : user1 })
         assert.equal(trn.logs.length, 0);
 
         await timeTravel(betCycleLength+betMinRevealLength);
 
         trn = await bon.withdraw(roundId, {from : user1 })
-        assert.equal(trn.logs.length, 0);
+        assert.equal(trn.logs.length, 1);
+        assert.equal(trn.logs[ 0 ].event, "LogRefund");
     });
 
     it("success to refund when round cannot be resolved", async () => {
@@ -376,5 +378,36 @@ contract("Basic unit tests", (accounts) => {
         assert.equal(trn.logs[ 0 ].args.amount.toNumber(), betValue.mul(2).toNumber());
 
     });
+
+    it("large amount of bets are not resolved at first withdraw", async () => {
+        
+        const maxResolves = (await bon.MAXRESOLVES()).toNumber()
+        const betValue = await bon.betAmount()
+        const [roundId,,,,,,] = await bon.getRoundById(0,VMTIME)
+
+        await bon.bet(roundId, [260000],  {from : user1 , value : betValue})
+        for (let c=0;c<maxResolves;c++) {
+            await bon.bet(roundId, [260001+c],  {from : user2 , value : betValue})
+        }
+
+        await timeTravel(betCycleLength+betMinRevealLength+1);
+        await bon.__updateEthPrice(roundId,260000) 
+
+        let trn = await bon.withdraw(roundId, {from : user1 })        
+        assert.equal(trn.logs.length, 1);
+        assert.equal(trn.logs[ 0 ].event, "LogUnresolved");
+        assert.equal(trn.logs[ 0 ].args.roundId.toNumber(), roundId.toNumber());
+        assert.equal(trn.logs[ 0 ].args.pending.toNumber(), 1);
+        
+        trn = await bon.withdraw(roundId, {from : user1 })        
+        assert.equal(trn.logs.length, 2);
+        assert.equal(trn.logs[ 0 ].event, "LogWinner");
+        assert.equal(trn.logs[ 0 ].args.roundId.toNumber(), roundId.toNumber());
+        assert.equal(trn.logs[ 0 ].args.winner, user1);
+        assert.equal(trn.logs[ 1 ].event, "LogWinnerPaid");
+        assert.equal(trn.logs[ 1 ].args.roundId.toNumber(), roundId.toNumber());
+        assert.equal(trn.logs[ 1 ].args.winner, user1);
+    });
+
 
 });

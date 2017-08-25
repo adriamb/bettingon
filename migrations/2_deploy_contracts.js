@@ -4,7 +4,7 @@ module.exports = function(deployer) {
 
   deployer.deploy(
   	 BettingonUITestDeploy,
-     "0x6f485c8bf6fc43ea212e93bbf8ce046c7f1cb475" // Oraclize Bridge
+     "0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475" // Oraclize Bridge
   );
 
 };

@@ -9,6 +9,8 @@ contract BettingonImpl is Bettingon {
     using SafeMath256 for uint;
     using SafeMath64 for uint64;
 
+    uint public constant MAXRESOLVES = 25;
+
     /// code ===================================================
 
     event LogDebug(string what);
@@ -101,8 +103,8 @@ contract BettingonImpl is Bettingon {
             bet(msg.sender,round,_targets[targetNo]);
         }
         LogBet(_roundId,msg.sender,_targets);
-        
     }
+
 
     function withdraw(uint32 _roundId) {
 
@@ -150,26 +152,18 @@ contract BettingonImpl is Bettingon {
         if(status==RoundStatus.PRICESET) {
             
             // The round is not yet resolved, so resolve it
-            // We have two different strategies here:
-            //
-            //   1) if there's less that XXX pending bets to process 
-            //      resolve them all
-            //   2) if there's more than XXX pending transactions
-            //      forceResolveRound should be called
-
-            uint pendingRounds = round.bets.length - round.lastCheckedBetNo + 1 ;
-
-            if (pendingRounds > 10) {
-                return;
-            }
-
-            resolveRoundNo(roundNo,pendingRounds);
+            resolveRoundNo(roundNo,MAXRESOLVES);
+            status = getRoundStatus(roundNo,uint64(now));
         }
 
         // ------------------------------------------------------------------
         //  case RESOLVED
 
-        if(getRoundStatus(roundNo,uint64(now))!=RoundStatus.RESOLVED) {
+        if(status!=RoundStatus.RESOLVED) {
+            LogUnresolved(
+                _roundId,
+                uint32(round.bets.length.sub(round.lastCheckedBetNo).div(MAXRESOLVES)+1)
+            );
             return;
         }
 
@@ -410,7 +404,6 @@ contract BettingonImpl is Bettingon {
         uint32      lastCheckedBetNo,
         uint32      closestBetNo
     ) {
-        
         status = getRoundStatus(_roundNo, _now);
 
         if (_roundNo >= rounds.length) {
@@ -448,7 +441,6 @@ contract BettingonImpl is Bettingon {
         
         uint32 roundNo = roundById[_roundId];
 
-
     }
 
 
@@ -461,7 +453,7 @@ contract BettingonImpl is Bettingon {
     }
 
     function percentage(uint _amount, uint8 _perc) internal constant returns (uint) {
-        return _amount.mul(10**16).mul(_perc).div(10**18);
+        return _amount.mul(_perc).div(100);
     }
 
     function diff(uint _a, uint _b) internal constant returns (uint) {
@@ -471,7 +463,5 @@ contract BettingonImpl is Bettingon {
            return _b.sub(_a);
        }
     }
-
-
 
 }
